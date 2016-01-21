@@ -1,11 +1,13 @@
 import numpy as np
 import cv2
 
+import matplotlib.pyplot as plt
+
 import algorithms
 
 if __name__ == "__main__":
 
-    socm_trainer = algorithms.SOCMTrainer([50, 50], 1000)
+    socm_trainer = algorithms.SOCMTrainer([50, 50], 200)
     training_samples = np.random.random([100, 3])
     socm_trainer.fit(training_samples)
 
