@@ -5,3 +5,6 @@ To run the code, simply execute `python ./main.py`.
 Sample output:
 
 ![Colormap](./colormap.png)
+
+You can also see it in action on Youtube:  
+https://youtu.be/2b-lGB0M5Nc
