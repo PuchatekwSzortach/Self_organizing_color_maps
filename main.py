@@ -1,11 +1,11 @@
 import numpy as np
 import cv2
 
-import algorithms
+import socm.algorithms
 
 if __name__ == "__main__":
 
-    socm_trainer = algorithms.SOCMTrainer([200, 200], 100)
+    socm_trainer = socm.algorithms.SOCMTrainer([200, 200], 100)
     training_samples = np.random.random([100, 3])
     socm_trainer.train(training_samples)
 
