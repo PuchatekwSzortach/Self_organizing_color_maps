@@ -27,7 +27,7 @@ class SOCMTrainer:
     def __init__(self, shape, iterations_number):
         """
         :param shape: a 2 elements list that specifies map size
-        :param iterations_number: number of iterations map will be trained on iput
+        :param iterations_number: number of iterations map will be trained on input
         """
         if len(shape) != 2:
             raise ValueError("Shape must have 2 dimensions")
