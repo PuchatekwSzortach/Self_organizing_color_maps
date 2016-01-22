@@ -69,7 +69,7 @@ class SOCMTrainer:
 
         # Stack neighborhood function 3 times in z-direction, so weights map can be multiplied by it
         neighborhood_function_replicated = np.dstack(
-                (neighborhood_function, neighborhood_function, neighborhood_function))
+            (neighborhood_function, neighborhood_function, neighborhood_function))
 
         weight_increment = neighborhood_function_replicated * learning_rate * (element - self.map)
         self.map += weight_increment
