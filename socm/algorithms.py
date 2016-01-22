@@ -54,7 +54,7 @@ class SOCMTrainer:
                 self._train_on_element(element, learning_rate, neighborhood_width)
 
             # Show map on current iteration, scaled up quite a bit to be visible
-            cv2.imshow("map", cv2.pyrUp(cv2.pyrUp(self.map)))
+            cv2.imshow("map", cv2.pyrUp(self.map))
             cv2.waitKey(30)
 
     def _train_on_element(self, element, learning_rate, neighborhood_width):
