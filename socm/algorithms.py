@@ -3,6 +3,22 @@ import itertools
 import cv2
 
 
+def get_2d_coordinates_grid(shape):
+    """
+    Given a 2 element tuple, return a 2D matrix of grid coordinates.
+    Each element of the grid is a point [x, y] where x and y are coordinate values
+    """
+
+    y = range(0, shape[0])
+    x = range(0, shape[1])
+
+    yx_list = list(itertools.product(y, x))
+    yx_vector = np.array(yx_list)
+
+    yx_matrix = np.array(yx_vector).reshape((shape[0], shape[1], 2))
+    return yx_matrix
+
+
 class SOCMTrainer:
     """
     A class for training a Self Organizing Color Map
@@ -22,41 +38,45 @@ class SOCMTrainer:
         self.map = np.random.random(map_shape)
         self.iterations_number = iterations_number
 
-        self.coordinates_grid = self.get_coordinates_grid()
+        self.coordinates_grid = get_2d_coordinates_grid(self.map.shape)
 
-    def fit(self, training_data):
+    def train(self, training_data):
 
         for iteration_index in range(self.iterations_number):
 
-            print("Iteration {}".format(iteration_index))
+            print("Iteration {}/{}".format(iteration_index, self.iterations_number))
 
-            learning_rate = self.get_learning_rate(iteration_index)
-            neighborhood_width = self.get_neighborhood_function_width(iteration_index)
+            # Learning rate and neighborhood width don't depend on training data
+            learning_rate = self._get_learning_rate(iteration_index)
+            neighborhood_width = self._get_neighborhood_function_width(iteration_index)
 
             for element in training_data:
-                self.fit_element(element, learning_rate, neighborhood_width)
+                self._train_on_element(element, learning_rate, neighborhood_width)
 
-            cv2.imshow("map", cv2.pyrUp(cv2.pyrUp(cv2.pyrUp(self.map))))
+            # Show map on current iteration, scaled up quite a bit to be visible
+            cv2.imshow("map", cv2.pyrUp(cv2.pyrUp(self.map)))
             cv2.waitKey(30)
 
-    def fit_element(self, element, learning_rate, neighborhood_width):
+    def _train_on_element(self, element, learning_rate, neighborhood_width):
 
-        # Compute distances to all elements of map
+        # Compute distances from element to map weights
         distance_map = np.linalg.norm(element - self.map, axis=2)
 
+        # Get index of weight closest to training element
         best_matching_unit_indices = np.unravel_index(np.argmin(distance_map), distance_map.shape)
 
-        neighborhood_function = self.get_neighborhood_function(best_matching_unit_indices, neighborhood_width)
+        neighborhood_function = self._get_neighborhood_function(best_matching_unit_indices, neighborhood_width)
 
+        # Stack neighborhood function 3 times in z-direction, so weights map can be multiplied by it
         neighborhood_function_replicated = np.dstack(
                 (neighborhood_function, neighborhood_function, neighborhood_function))
 
         weight_increment = neighborhood_function_replicated * learning_rate * (element - self.map)
-
         self.map += weight_increment
 
-    def get_neighborhood_function(self, best_matching_unit_indices, neighborhood_width):
+    def _get_neighborhood_function(self, best_matching_unit_indices, neighborhood_width):
 
+        # Get distances from best match coordinate to other coordinates
         distance_to_best_match = np.linalg.norm(best_matching_unit_indices - self.coordinates_grid, axis=2)
 
         exponent = -1 * (distance_to_best_match / (2 * neighborhood_width**2))**2
@@ -64,18 +84,7 @@ class SOCMTrainer:
 
         return neighborhood_function
 
-    def get_coordinates_grid(self):
-
-        y = range(0, self.map.shape[0])
-        x = range(0, self.map.shape[1])
-
-        yx_list = list(itertools.product(y, x))
-        yx_vector = np.array(yx_list)
-
-        yx_matrix = np.array(yx_vector).reshape((self.map.shape[0], self.map.shape[1], 2))
-        return yx_matrix
-
-    def get_learning_rate(self, iteration_number):
+    def _get_learning_rate(self, iteration_number):
 
         base_width = max(self.map.shape[0], self.map.shape[1]) / 2
         time_base = self.iterations_number / np.log(base_width)
@@ -83,12 +92,10 @@ class SOCMTrainer:
         learning_rate = 0.1 * np.exp(-1 * iteration_number / time_base)
         return learning_rate
 
-    def get_neighborhood_function_width(self, iteration_number):
+    def _get_neighborhood_function_width(self, iteration_number):
 
         base_width = max(self.map.shape[0], self.map.shape[1]) / 2
         time_base = self.iterations_number / np.log(base_width)
 
-        neighborhood_width = base_width * np.exp(-iteration_number / time_base)
+        neighborhood_width = base_width * np.exp(-1 * iteration_number / time_base)
         return neighborhood_width
-
-
